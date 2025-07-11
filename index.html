@@ -30,7 +30,7 @@
     function parseAmount(text) {
       const match = text.match(/5406(\d+)(?=5802VN)/);
       if (match) {
-        return parseInt(match[1]) / 100;
+        return parseInt(match[1]);
       }
       return 0;
     }
