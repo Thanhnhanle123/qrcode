@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quét Mã QR Bằng Camera Điện Thoại</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      padding: 10px;
+    }
+    #qr-reader {
+      width: 100%;
+      max-width: 400px;
+      margin: auto;
+    }
+    #result {
+      margin-top: 15px;
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>📱 Quét Mã QR</h2>
+  <div id="qr-reader"></div>
+  <div id="result">Đưa mã QR vào camera...</div>
+
+  <script>
+    const html5QrCode = new Html5Qrcode("qr-reader");
+
+    function onScanSuccess(decodedText, decodedResult) {
+      document.getElementById('result').innerText = `✅ Mã: ${decodedText}`;
+      // Tắt camera sau khi quét xong
+      html5QrCode.stop().then(() => {
+        console.log("Đã dừng camera");
+      }).catch(err => console.log(err));
+    }
+
+    html5QrCode.start(
+      { facingMode: "environment" }, // Sử dụng camera sau
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 }
+      },
+      onScanSuccess
+    );
+  </script>
+</body>
+</html>
