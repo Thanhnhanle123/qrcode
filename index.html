@@ -2,99 +2,45 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Quét QR & Cộng Tổng Tiền</title>
+  <title>Quét QR & Tính Tổng Tiền</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body { font-family: Arial; background: #f4f4f4; padding: 20px; text-align: center; }
     h1 { color: #333; }
     #reader { width: 300px; margin: 0 auto; }
-    table {
-      width: 90%; margin: 20px auto; border-collapse: collapse; background: #fff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    th, td {
-      padding: 10px; border: 1px solid #ccc; text-align: center;
-    }
-    th { background: #eee; }
     #total {
-      font-size: 18px;
+      font-size: 22px;
       font-weight: bold;
-      margin-top: 20px;
+      margin-top: 30px;
+      color: #008000;
     }
   </style>
 </head>
 <body>
 
-  <h1>📷 Quét và cộng tổng tiền QR</h1>
+  <h1>📷 Quét QR & Hiện Tổng Tiền</h1>
   <div id="reader"></div>
-
-  <table id="resultTable">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Ngân hàng</th>
-        <th>Số tài khoản</th>
-        <th>Số tiền</th>
-        <th>Ghi chú</th>
-      </tr>
-    </thead>
-    <tbody id="resultBody"></tbody>
-  </table>
 
   <div id="total">Tổng tiền: 0 VND</div>
 
   <script>
     let totalAmount = 0;
-    let scannedData = new Set(); // để tránh quét trùng
-    let count = 0;
+    let scannedData = new Set();
 
-    const bankCodes = {
-      '970422': 'Vietcombank',
-      '970436': 'TPBank',
-      '970405': 'VietinBank',
-      '970418': 'Techcombank',
-      '970415': 'ACB',
-      '970407': 'BIDV',
-      '970403': 'Sacombank',
-      '970412': 'MB Bank',
-      // Bạn có thể thêm các mã ngân hàng khác tại đây nếu cần
-    };
-
-    function parseQR(text) {
-      const bankMatch = text.match(/A00000072701(\d{6})/); // mã ngân hàng
-      const bankCode = bankMatch ? bankMatch[1] : '------';
-      const bankName = bankCodes[bankCode] || 'Không rõ';
-
-      const accMatch = text.match(/0110\d{6,}/); // số tài khoản bắt đầu bằng 0110
-      const account = accMatch ? accMatch[0] : 'Không rõ';
-
-      const amountMatch = text.match(/54\d{2}(\d{1,})/); // số tiền
-      const amount = amountMatch ? parseInt(amountMatch[1]) / 100 : 0;
-
-      const noteMatch = text.match(/62\d{2}([A-Z0-9]+)/); // ghi chú
-      const note = noteMatch ? noteMatch[1] : 'Không có';
-
-      return { bank: bankName, account, amount, note };
+    function parseAmount(text) {
+      const match = text.match(/5406(\d+)(?=5802VN)/);
+      if (match) {
+        return parseInt(match[1]) / 100;
+      }
+      return 0;
     }
 
     function onScanSuccess(decodedText, decodedResult) {
-      if (scannedData.has(decodedText)) return; // bỏ qua nếu trùng
+      if (scannedData.has(decodedText)) return;
       scannedData.add(decodedText);
 
-      const info = parseQR(decodedText);
-      totalAmount += info.amount;
-      count++;
-
-      const tbody = document.getElementById("resultBody");
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${count}</td>
-        <td>${info.bank}</td>
-        <td>${info.account}</td>
-        <td>${info.amount.toLocaleString('vi-VN')} VND</td>
-        <td>${info.note}</td>
-      `;
-      tbody.appendChild(row);
+      const amount = parseAmount(decodedText);
+      totalAmount += amount;
 
       document.getElementById("total").innerText =
         "Tổng tiền: " + totalAmount.toLocaleString('vi-VN') + " VND";
