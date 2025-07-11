@@ -45,33 +45,46 @@
 
   <script>
     let totalAmount = 0;
-    let scannedData = new Set(); // để loại trùng
+    let scannedData = new Set(); // để tránh quét trùng
     let count = 0;
+
+    const bankCodes = {
+      '970422': 'Vietcombank',
+      '970436': 'TPBank',
+      '970405': 'VietinBank',
+      '970418': 'Techcombank',
+      '970415': 'ACB',
+      '970407': 'BIDV',
+      '970403': 'Sacombank',
+      '970412': 'MB Bank',
+      // Bạn có thể thêm các mã ngân hàng khác tại đây nếu cần
+    };
 
     function parseQR(text) {
       const bankMatch = text.match(/A00000072701(\d{6})/); // mã ngân hàng
-      const accMatch = text.match(/0110\d{7,}/); // số tài khoản
-      const amountMatch = text.match(/5406(\d{1,})/); // số tiền
-      const noteMatch = text.match(/62\d{2}([A-Z0-9]+)/); // ghi chú
+      const bankCode = bankMatch ? bankMatch[1] : '------';
+      const bankName = bankCodes[bankCode] || 'Không rõ';
 
-      return {
-        raw: text,
-        bank: bankMatch ? bankMatch[1] : 'Không rõ',
-        account: accMatch ? accMatch[0] : 'Không rõ',
-        amount: amountMatch ? parseInt(amountMatch[1]) / 100 : 0,
-        note: noteMatch ? noteMatch[1] : 'Không có'
-      };
+      const accMatch = text.match(/0110\d{6,}/); // số tài khoản bắt đầu bằng 0110
+      const account = accMatch ? accMatch[0] : 'Không rõ';
+
+      const amountMatch = text.match(/54\d{2}(\d{1,})/); // số tiền
+      const amount = amountMatch ? parseInt(amountMatch[1]) / 100 : 0;
+
+      const noteMatch = text.match(/62\d{2}([A-Z0-9]+)/); // ghi chú
+      const note = noteMatch ? noteMatch[1] : 'Không có';
+
+      return { bank: bankName, account, amount, note };
     }
 
     function onScanSuccess(decodedText, decodedResult) {
-      if (scannedData.has(decodedText)) return; // bỏ qua nếu đã quét
-
+      if (scannedData.has(decodedText)) return; // bỏ qua nếu trùng
       scannedData.add(decodedText);
+
       const info = parseQR(decodedText);
       totalAmount += info.amount;
       count++;
 
-      // Thêm dòng vào bảng
       const tbody = document.getElementById("resultBody");
       const row = document.createElement("tr");
       row.innerHTML = `
@@ -83,7 +96,6 @@
       `;
       tbody.appendChild(row);
 
-      // Cập nhật tổng
       document.getElementById("total").innerText =
         "Tổng tiền: " + totalAmount.toLocaleString('vi-VN') + " VND";
     }
