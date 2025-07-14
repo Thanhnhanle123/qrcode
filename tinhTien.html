@@ -1,178 +1,189 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quét QR & Tổng Tiền</title>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    h1 {
-      color: #333;
-      font-size: 22px;
-      margin: 16px 0;
-    }
-    #reader {
-      width: 90vw;
-      max-width: 320px;
-      margin: 0 auto;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    }
-    input {
-      font-size: 16px;
-      padding: 8px 12px;
-      margin-top: 20px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      width: 80%;
-      max-width: 300px;
-    }
-    #total, #tienDu {
-      font-size: 18px;
-      font-weight: bold;
-      margin-top: 20px;
-    }
-    #total {
-      color: green;
-    }
-    #tienDu {
-      color: blue;
-    }
-    .btn-back {
-      display: inline-block;
-      margin: 30px auto;
-      padding: 10px 20px;
-      background-color: #007BFF;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      text-decoration: none;
-      transition: background-color 0.2s;
-    }
-    .btn-back:hover {
-      background-color: #0056b3;
-    }
-    @media (max-width: 400px) {
-      h1 {
-        font-size: 18px;
-      }
-      #total, #tienDu {
-        font-size: 16px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quét QR & Tổng Tiền</title>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 22px;
+            margin: 16px 0;
+        }
+
+        #reader {
+            width: 90vw;
+            max-width: 320px;
+            margin: 0 auto;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        input {
+            font-size: 16px;
+            padding: 8px 12px;
+            margin-top: 20px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        #total,
+        #tienDu {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        #total {
+            color: green;
+        }
+
+        #tienDu {
+            color: blue;
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin: 30px auto;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-back:hover {
+            background-color: #0056b3;
+        }
+
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 18px;
+            }
+
+            #total,
+            #tienDu {
+                font-size: 16px;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-  <h1>📷 Quét QR & Tổng Tiền</h1>
-  <h2 style="color:red">Hàn Quốc Xin Chào</h2>
-  <div id="reader"></div>
+    <h1>📷 Quét QR & Tổng Tiền</h1>
+    <h2 style="color:red">Hàn Quốc Xin Chào</h2>
+    <div id="reader"></div>
 
-  <input type="text" id="TienNhan" placeholder="Nhập tiền khách đưa (vd: bảy trăm, 1 triệu)" onblur="onchangeTienNhan()">
+    <input type="text" id="TienNhan" placeholder="Nhập tiền khách đưa (vd: bảy trăm, 1 triệu)"
+        onblur="onchangeTienNhan()">
 
-  <div id="total">Tổng tiền: 0 VND</div>
-  <div id="tienDu">Tiền trả lại: 0 VND</div>
+    <div id="total">Tổng tiền: 0 VND</div>
+    <div id="tienDu">Tiền trả lại: 0 VND</div>
 
-  <!-- Nút trở về index -->
-  <a href="index.html" class="btn-back">⬅️ Về Trang Chính</a>
+    <!-- Nút trở về index -->
+    <a href="index.html" class="btn-back">⬅️ Về Trang Chính</a>
 
-  <script>
-    let totalAmount = 0;
-    let scannedData = new Set();
+    <script>
+        let totalAmount = 0;
+        let scannedData = new Set();
 
-    function parseAmount(text) {
-      const match = text.match(/5406(\d+)(?=5802VN)/);
-      return match ? parseInt(match[1]) : 0;
-    }
-
-    function textToNumber(text) {
-      text = text.toLowerCase().replace(/[,]/g, '').trim();
-
-      if (/\d/.test(text)) {
-        if (text.includes('triệu')) {
-          const so = parseFloat(text.replace(/[^\d\.]/g, '')) || 1;
-          return so * 1_000_000;
+        function parseAmount(text) {
+            const match = text.match(/5406(\d+)(?=5802VN)/);
+            return match ? parseInt(match[1]) : 0;
         }
-        if (text.includes('nghìn') || text.includes('ngàn')) {
-          const so = parseFloat(text.replace(/[^\d\.]/g, '')) || 1;
-          return so * 1_000;
+
+        function textToNumber(text) {
+            text = text.toLowerCase().replace(/[,]/g, '').trim();
+            const words = text.split(/\s+/);
+
+            const digitMap = {
+                "không": 0, "một": 1, "mốt": 1, "hai": 2, "ba": 3,
+                "bốn": 4, "tư": 4, "năm": 5, "lăm": 5,
+                "sáu": 6, "bảy": 7, "bẩy": 7, "tám": 8, "chín": 9, "linh": 0, "lẻ": 0
+            };
+
+            const unitMap = {
+                "mươi": 10,
+                "trăm": 100,
+                "nghìn": 1000, "ngàn": 1000,
+                "triệu": 1000000,
+                "tỷ": 1000000000
+            };
+
+            let total = 0;
+            let current = 0;
+            let lastDigit = 0;
+
+            words.forEach((word, i) => {
+                if (!isNaN(parseInt(word))) {
+                    lastDigit = parseInt(word);
+                    current += lastDigit;
+                } else if (digitMap[word] !== undefined) {
+                    lastDigit = digitMap[word];
+                    current += lastDigit;
+                } else if (unitMap[word]) {
+                    if (unitMap[word] < 1000) {
+                        if (lastDigit === 0) lastDigit = 1;
+                        current += (lastDigit * unitMap[word]) - lastDigit;
+                    } else {
+                        total += (current === 0 ? 1 : current) * unitMap[word];
+                        current = 0;
+                    }
+                    lastDigit = 0;
+                }
+            });
+
+            return total + current;
         }
-        const so = parseInt(text);
-        return isNaN(so) ? 0 : so;
-      }
 
-      const digitMap = {
-        "không": 0, "một": 1, "mốt": 1, "hai": 2, "ba": 3,
-        "bốn": 4, "tư": 4, "năm": 5, "lăm": 5,
-        "sáu": 6, "bảy": 7, "bẩy": 7, "tám": 8, "chín": 9
-      };
 
-      const unitMap = {
-        "mươi": 10,
-        "trăm": 100,
-        "nghìn": 1_000, "ngàn": 1_000,
-        "triệu": 1_000_000
-      };
+        function onchangeTienNhan() {
+            const rawText = document.getElementById("TienNhan").value;
+            const tienNhan = textToNumber(rawText);
+            const tienThua = tienNhan - totalAmount;
 
-      const words = text.split(/\s+/);
-      let total = 0, current = 0;
-
-      for (let i = 0; i < words.length; i++) {
-        const w = words[i];
-
-        if (digitMap[w] != null) {
-          current += digitMap[w];
-        } else if (w === "mươi") {
-          current = (current === 0 ? 1 : current) * 10;
-        } else if (unitMap[w]) {
-          if (current === 0) current = 1;
-          total += current * unitMap[w];
-          current = 0;
+            document.getElementById("tienDu").innerText =
+                "Tiền trả lại: " + (tienThua > 0 ? tienThua.toLocaleString('vi-VN') : "0") + " VND";
         }
-      }
 
-      total += current;
-      return total;
-    }
+        function onScanSuccess(decodedText, decodedResult) {
+            if (scannedData.has(decodedText)) return;
+            scannedData.add(decodedText);
 
-    function onchangeTienNhan() {
-      const rawText = document.getElementById("TienNhan").value;
-      const tienNhan = textToNumber(rawText);
-      const tienThua = tienNhan - totalAmount;
+            const amount = parseAmount(decodedText);
+            totalAmount += amount;
 
-      document.getElementById("tienDu").innerText =
-        "Tiền trả lại: " + (tienThua > 0 ? tienThua.toLocaleString('vi-VN') : "0") + " VND";
-    }
+            document.getElementById("total").innerText =
+                "Tổng tiền: " + totalAmount.toLocaleString('vi-VN') + " VND";
 
-    function onScanSuccess(decodedText, decodedResult) {
-      if (scannedData.has(decodedText)) return;
-      scannedData.add(decodedText);
+            onchangeTienNhan();
+        }
 
-      const amount = parseAmount(decodedText);
-      totalAmount += amount;
-
-      document.getElementById("total").innerText =
-        "Tổng tiền: " + totalAmount.toLocaleString('vi-VN') + " VND";
-
-      onchangeTienNhan();
-    }
-
-    const html5QrcodeScanner = new Html5QrcodeScanner(
-      "reader",
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      false
-    );
-    html5QrcodeScanner.render(onScanSuccess);
-  </script>
+        const html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            false
+        );
+        html5QrcodeScanner.render(onScanSuccess);
+    </script>
 
 </body>
+
 </html>
