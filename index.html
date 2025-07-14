@@ -36,6 +36,23 @@
       margin: 24px 0;
     }
 
+    .btn-next {
+      display: inline-block;
+      padding: 10px 20px;
+      font-size: 16px;
+      color: #fff;
+      background-color: #28a745;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      margin-top: 20px;
+      transition: background-color 0.2s;
+    }
+
+    .btn-next:hover {
+      background-color: #218838;
+    }
+
     @media (max-width: 400px) {
       h1 { font-size: 18px; }
       #total { font-size: 18px; }
@@ -48,6 +65,9 @@
   <h2 style="color:red">Hàn Quốc Xin Chào</h2>
   <div id="reader"></div>
   <div id="total">Tổng tiền: 0 VND</div>
+
+  <!-- Nút chuyển sang trang tính tiền -->
+  <a href="tinhTien.html" class="btn-next">➡️ Sang Trang Tính Tiền</a>
 
   <script>
     let totalAmount = 0;
